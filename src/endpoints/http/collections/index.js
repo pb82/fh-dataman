@@ -1,5 +1,6 @@
 import listCollections from './list';
 import {createCollection} from './create';
+import {deleteCollections} from './delete';
 
 export function collectionsHandler(router) {
   //list collection info
@@ -15,4 +16,5 @@ export function collectionsHandler(router) {
   });
   //create collection
   createCollection(router);
+  deleteCollections(router);
 }
