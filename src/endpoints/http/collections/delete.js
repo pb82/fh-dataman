@@ -9,8 +9,8 @@
  */
 export default function deleteCollections(appname, logger, db, collections) {
   logger.debug({appname}, 'deleting collection(s)');
-  const promises = collections.map(collection => {
-    return new Promise((resolve, reject) => {
+  const promises = collections.map(function(collection) {
+    return new Promise(function(resolve, reject) {
       return db.getCollection(collection).drop() ? resolve(collection) : reject(collection);
     });
   });

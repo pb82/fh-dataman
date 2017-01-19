@@ -9,7 +9,7 @@ const mockLogger = {
 const dropStub = sinon.stub();
 
 const mockDb = {
-  getCollection: name => {
+  getCollection: function() {
     return {
       drop: dropStub
     };
@@ -32,7 +32,7 @@ export function testDeleteCollections(done) {
 
 export function testDeleteCollectionsFailure(done) {
   dropStub.returns(false);
-  deleteCollections('test-delete-app', mockLogger, mockDb, reqCollections).catch(() => {
+  deleteCollections('test-delete-app', mockLogger, mockDb, reqCollections).catch(function() {
     return done();
   });
 }

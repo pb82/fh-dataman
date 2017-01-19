@@ -24,8 +24,8 @@ export function collectionsHandler(router) {
     const name = req.body.name;
     createCollection(req.param('appname'), req.log, req.db, name)
       .then(result => {
-        req.log.trace({name}, ' collection created');
-        return res.status(201).send(result, 'collection created');
+        req.log.trace({name}, 'collection created');
+        return res.status(201).send(result.concat(' collection created'));
       }).catch(next);
   });
 
@@ -43,14 +43,14 @@ export function collectionsHandler(router) {
       if (_.includes(allCollections, name)) {
         return name;
       } else {
-        return res.status(400).send({name}, ' collection does not exist in database');
+        return res.status(400).send({name}, 'collection does not exist in database');
       }
     });
     const appname = req.param('appname');
     deleteCollections(req.param('appname'), req.log, req.db, collectionsToDelete)
       .then(result => {
-        req.log.trace({app: appname, result}, ' collection(s) deleted');
-        return res.status(200).send(result, 'collection(s) deleted');
+        req.log.trace({app: appname, result}, 'collection(s) deleted');
+        return res.status(200).send(result.concat('collection(s) deleted'));
       }).catch(next);
   });
 }

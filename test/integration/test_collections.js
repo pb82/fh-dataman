@@ -45,13 +45,28 @@ module.exports = {
     'test_collection_create': function(done) {
       chai.request(SERVER_URL)
           .post(`${PATH_PREFIX}/collections`)
-          .send({name: 'test_create'})
+          .send({name: 'testCreate'})
           .set('Authorization', `Bearer ${TOKEN}`)
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res).to.have.status(201);
+            expect(res.text).to.equal('testCreate collection created');
             done();
           });
+    },
+
+    'testCollectionDelete': done => {
+      mongodbClient.getCollectionNames();
+      chai.request(SERVER_URL)
+         .delete(`${PATH_PREFIX}/collections`)
+         .query({names: 'test1'})
+         .set('Authorization', `Bearer ${TOKEN}`)
+         .end((err, res) => {
+           expect(err).to.be.null;
+           expect(res).to.have.status(200);
+           expect(res.text).to.equal('"test1 collection(s) deleted"');
+           done();
+         });
     }
   }
 };

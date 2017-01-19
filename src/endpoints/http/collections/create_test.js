@@ -22,7 +22,7 @@ export function testCreateCollection(done) {
 
 export function testCreateCollectionFailure(done) {
   createCollectionStub.yields('someError');
-  createCollection('test-create-collection', mockLogger, mockDb, 'testCollection').catch(() => {
+  createCollection('test-create-collection', mockLogger, mockDb, 'testCollection').catch(function() {
     return done();
   });
 }

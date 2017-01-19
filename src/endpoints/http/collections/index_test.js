@@ -59,9 +59,9 @@ module.exports = {
       supertest(app)
         .delete('/api/collections?names=collection1,collection2')
         .expect(200)
-        .then(res => {
-          return expect(res.text).to.equal('"collection1,collection2 collection(s) deleted"');
-        })
+        .then(function(res) {
+          assert.equal(res.text, '"collection1,collection2 collection(s) deleted"');
+        });
     },
     'test delete handler no collections in db': done => {
       supertest(app)
@@ -82,9 +82,9 @@ module.exports = {
         .post('/api/collections')
         .send({name: 'testCollection'})
         .expect(201)
-        .then(res => {
-          return expect(res.text).to.equal('testCollection collection deleted');
-        })
+        .then(function(res) {
+          assert.equal(res.text, 'testCollection collection deleted');
+        });
     }
   }
 };
