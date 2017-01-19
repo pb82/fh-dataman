@@ -1,82 +1,38 @@
-import bodyParser from 'body-parser';
-import {deleteCollections} from './delete.js';
-import express from 'express';
+import assert from 'assert';
+import deleteCollections from './delete';
 import sinon from 'sinon';
-import supertest from 'supertest';
 
-const collectionEndPoint = '/collections';
-const app = express();
-const getCollectionNamesStub = sinon.stub();
-app.use(bodyParser.json());
-app.use((req, res, next) => {
-  req.db = {
-    getCollectionNames: getCollectionNamesStub,
-    getCollection: function(name) {
-      return {name: name};
-    }
-  };
+const mockLogger = {
+  debug: () => {}
+};
 
-  req.db.collectionToDelete = {
-    drop: function() {
-      return true;
-    }
-  };
+const dropStub = sinon.stub();
 
-  req.log = {
-    debug: function() {},
-  };
+const mockDb = {
+  getCollection: name => {
+    return {
+      drop: dropStub
+    };
+  }
+};
 
-  next();
-});
+const reqCollections = [
+  'collection1',
+  'collection2'
+];
 
-export function collectionNamesParamRequired(done) {
-  deleteCollections(app);
-
-  supertest(app)
-    .post(collectionEndPoint)
-    .expect(400)
-    .expect(res => {
-      res.message = 'names(s) of collection(s) is required';
-    })
-    .end(done);
+export function testDeleteCollections(done) {
+  dropStub.returns(true);
+  deleteCollections('test-delete-app', mockLogger, mockDb, reqCollections).then(result => {
+    assert.equal(result[0], reqCollections[0]);
+    assert.equal(result[1], reqCollections[1]);
+    done();
+  }).catch(done);
 }
 
-export function noCollectionsInDatabase(done) {
-  getCollectionNamesStub.returns(null);
-  deleteCollections(app);
-
-  supertest(app)
-    .post(collectionEndPoint)
-    .send({
-      names: [
-        'collection1',
-        'collection2',
-        'collection3'
-      ]
-    })
-    .expect(400)
-    .expect(res => {
-      res.message = 'No collections exists in database';
-    })
-    .end(done);
-}
-
-export function dropCollections(done) {
-  getCollectionNamesStub.returns(['collection1', 'collection2', 'employees']);
-  deleteCollections(app);
-
-  supertest(app)
-   .post(collectionEndPoint)
-   .send({
-     names: [
-       'collection1',
-       'collection2',
-       'collection3'
-     ]
-   })
-   .expect(200)
-   .expect(res => {
-     res.message = 'ok';
-   })
-   .end(done);
+export function testDeleteCollectionsFailure(done) {
+  dropStub.returns(false);
+  deleteCollections('test-delete-app', mockLogger, mockDb, reqCollections).catch(() => {
+    return done();
+  });
 }

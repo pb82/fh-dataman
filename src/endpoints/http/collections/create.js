@@ -1,28 +1,17 @@
-function message(message) {
-  return { message };
-}
-
 /**
- * Add the route to create a new collection for the users App.
- * This route expects a db connection to be present on the request object.
+ * Creates a collection for a given app.
  *
- * @param {object} router - The express router.
+ * @param {String} appname The appname. It should be in the format of "<domain>-<appGuid>-<envId>".
+ * @param {object} logger The logger object.
+ * @param {db} db The db connection.
+ * @param {String} name The name of the collection to be created.
+ * @returns Promise
  */
-export function createCollection(router) {
-  router.post("/collections", (req, res, next) => {
-    const name = req.body.name;
-    if (!name) {
-      return res.status(400).send(message('name is required'));
-    }
-
-    req.log.debug({name}, 'creating new collection');
-    req.db.createCollection(req.body.name, err => {
-      if (err) {
-        return next(err);
-      }
-
-      req.log.trace({name}, 'new collection created');
-      res.status(201).send(message('ok'));
+export default function createCollection(appname, logger, db, name) {
+  logger.debug({appname}, ' creating new collection ', {name});
+  return new Promise((resolve, reject) => {
+    return db.createCollection(name, err => {
+      return err ? reject(err) : resolve(name);
     });
   });
 }
