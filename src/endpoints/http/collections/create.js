@@ -9,8 +9,8 @@
  */
 export default function createCollection(appname, logger, db, name) {
   logger.debug({appname}, ' creating new collection ', {name});
-  return new Promise((resolve, reject) => {
-    return db.createCollection(name, err => {
+  return new Promise(function(resolve, reject) {
+    return db.createCollection(name, function(err) {
       return err ? reject(err) : resolve(name);
     });
   });
