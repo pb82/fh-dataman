@@ -7,12 +7,7 @@
  * @param {String[]} collections The array of collection name(s) to be deleted.
  * @returns Promise
  */
-export default function deleteCollections(appname, logger, db, collections) {
+export default function deleteCollections(appname, logger, db, collection) {
   logger.debug({appname}, 'deleting collection(s)');
-  const promises = collections.map(function(collection) {
-    return new Promise(function(resolve, reject) {
-      return db.getCollection(collection).drop() ? resolve(collection) : reject(collection);
-    });
-  });
-  return Promise.all(promises);
+  return db.dropCollection(collection);
 }
