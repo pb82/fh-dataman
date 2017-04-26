@@ -2,15 +2,17 @@
  * Mock function to dictate the behaviour of
  * the MbaasClient function in 'fh-mbaas-client'
  *
- * @param {object} stub
+ * @param {object} appEnvVarsStub
+ * @param {object} primaryNodeStub
  */
-module.exports = stub => function MbaasClient() {
+module.exports = (appEnvVarsStub, primaryNodeStub) => function MbaasClient() {
   return {
     admin: {
       apps: {
         envVars: {
-          get: stub
-        }
+          get: appEnvVarsStub
+        },
+        mongoPrimary: primaryNodeStub
       }
     }
   };

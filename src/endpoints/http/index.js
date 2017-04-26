@@ -1,14 +1,30 @@
-import {sysHealthEndpoint, sysPingEndpoint} from './sys';
 import {collectionsHandler} from './collections';
 import express from 'express';
+import fhconfig from 'fh-config';
+import dbConnection from '../../middleware/dbConnection';
+import parseFile from '../../middleware/parse-file';
+import authorize from '../../middleware/route-authorize';
 
 const PATH_PREFIX = "/api/:domain/:envId/:appGuid/data";
 
-export default function buildEndpoints(server) {
-  sysHealthEndpoint(server);
-  sysPingEndpoint(server);
+function attachMiddlewares(router) {
+  // Router level middleware
+  router.use(authorize());
+  const dbConfig = {
+    mbaas: fhconfig.value('mbaas'),
+    ditch: fhconfig.value('ditch')
+  };
+  router.use(dbConnection(dbConfig));
 
+  // Route level middleware
+  var importEndpoint = router.route('/collections/upload');
+  importEndpoint.post(parseFile());
+}
+
+export default function buildAPI(server) {
   var router = express.Router({mergeParams:true});
+  attachMiddlewares(router);
   collectionsHandler(router);
+
   server.use(PATH_PREFIX, router);
 }

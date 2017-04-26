@@ -22,6 +22,7 @@ export default function errorHandler(err, req, res, next) {
     res.json(responseData);
 
   } else {
+
     // pass error to next error middleware handler
     if (err instanceof Error) {
       var error = {};

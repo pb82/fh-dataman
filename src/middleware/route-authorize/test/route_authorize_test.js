@@ -16,11 +16,12 @@ module.exports = {
             guid: appGuid
           },
           permissions: [{
-            businessObject: fhconfig.value('businessObject'),
+            businessObject: fhconfig.value('businessObjects')[0],
             permissions: {read: true}
           }]
         };
         mockReq = {
+          method: 'GET',
           user: user,
           params: {
             appGuid: appGuid
@@ -42,6 +43,25 @@ module.exports = {
     'Route fails Authorization': function(done) {
       const middleware = authorize({permission: 'write'});
 
+      middleware(mockReq, mockRes, err => {
+        assert.ok(err);
+        done();
+      });
+    },
+
+    'Route Passes ReST Authorization': function(done) {
+      const middleware = authorize();
+
+      middleware(mockReq, mockRes, err => {
+        assert.ok(!err);
+        done();
+      });
+    },
+
+    'Route fails ReST Authorization': function(done) {
+      const middleware = authorize();
+
+      mockReq.method = 'POST';
       middleware(mockReq, mockRes, err => {
         assert.ok(err);
         done();

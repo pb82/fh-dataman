@@ -7,6 +7,8 @@ module.exports = function(grunt) {
 
     fhignore: ["src/**"],
 
+    fhinclude: ["config/validation.js"],
+
     fhLintTarget: ['src/**/*.js', 'test/**/*.js', 'Gruntfile.js'],
 
     _test_runner: '_mocha',

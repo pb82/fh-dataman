@@ -3,9 +3,7 @@ import createCollection from './create';
 import deleteCollections from './delete';
 import {insertCollections, getCollectionNames} from './files';
 import exportCollections from './export';
-import parseFile from '../../../middleware/parse-file';
 import statusCodes from 'http-status-codes';
-import authorize from '../../../middleware/route-authorize';
 import UnsupportedMediaError from '../../../Errors/UnsupportedMediaError';
 
 const DUPLICATE_DOCUMENT_ID = 11000;
@@ -13,10 +11,10 @@ const INCOMPATIBLE_DATA = 22000;
 
 export function collectionsHandler(router) {
   //list collection info
-  router.get('/collections', authorize({permission: 'read'}), function(req, res, next) {
+  router.get('/collections', (req, res, next) => {
     var appGuid = req.params.appGuid;
     req.log.debug({app: appGuid}, 'listing collections for app');
-    listCollections(req.param('appGuid'), req.log, req.db)
+    listCollections(appGuid, req.log, req.db)
       .then(result => {
         req.log.trace({app: appGuid, result}, 'collection data listed');
         res.json(result);
@@ -25,7 +23,7 @@ export function collectionsHandler(router) {
   });
 
   //create collection
-  router.post('/collections', authorize({permission: 'write'}), (req, res, next) => {
+  router.post('/collections', (req, res, next) => {
     if (!req.body.name) {
       return next({'message': 'name is required', code: statusCodes.BAD_REQUEST});
     }
@@ -38,7 +36,7 @@ export function collectionsHandler(router) {
   });
 
   // Delete collection
-  router.delete('/collections/', authorize({permission: 'write'}), (req, res, next) => {
+  router.delete('/collections', (req, res, next) => {
     if (!req.query.names) {
       return next({'message': 'names(s) of collection(s) is required', code: statusCodes.BAD_REQUEST});
     }
@@ -60,7 +58,7 @@ export function collectionsHandler(router) {
   });
 
   // Upload collections from files
-  router.post('/collections/upload', parseFile(), authorize({permission: 'write'}), (req, res, next) => {
+  router.post('/collections/upload', (req, res, next) => {
     if (!req.files.length) {
       return next({message: 'No file', code: statusCodes.BAD_REQUEST});
     }
@@ -90,7 +88,7 @@ export function collectionsHandler(router) {
       });
   });
 
-  router.get('/collections/export', authorize({ permission: 'read' }), (req, res, next) => {
+  router.get('/collections/export', (req, res, next) => {
     const supportedFormats = ["csv", "json", "bson"];
     if (!req.query.format.length) {
       return next({ message: 'No format selected', code: statusCodes.BAD_REQUEST });

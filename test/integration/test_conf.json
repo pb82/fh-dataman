@@ -1,26 +1,45 @@
 {
-  "port":9900,
+  "environment": "production",
+  "https": {
+    "enabled": false
+  },
   "logger": {
-    "name": "logger",
-    "streams": [{
-      "type": "stream",
-      "src": true,
-      "level": "trace",
-      "stream": "process.stdout"
-    }, {
-      "type": "raw",
-      "src": true,
-      "level": "trace",
-      "stream": "ringBuffer"
-    }]
+    "name": "dataman",
+    "streams": [
+        {
+        "type": "stream",
+        "src": true,
+        "level": "trace",
+        "stream": "process.stdout"
+      }, {
+        "type": "raw",
+        "src": true,
+        "level": "trace",
+        "stream": "ringBuffer"
+      }
+    ]
   },
   "auth": {
-    "secret": "secret"
+    "secret": "feedhenry101"
   },
-  "fh-mbaas": {
+  "businessObjects": [
+    "cluster/reseller/customer/domain/service/data-browser",
+    "cluster/reseller/customer/domain/project/client-apps/data-browser",
+    "cluster/reseller/customer/domain/project/cloud-apps/data-browser"
+  ],
+  "port": 8822,
+  "sizeLimit": 524288000,
+  "rootUrl": "/",
+  "mbaas": {
     "url": "http://localhost:9901",
-    "username": "",
-    "password": ""
+    "password": "",
+    "username": ""
+  },
+  "ditch": {
+    "host": "",
+    "port": "",
+    "user": "",
+    "password": "",
+    "database": ""
   }
-  
 }
