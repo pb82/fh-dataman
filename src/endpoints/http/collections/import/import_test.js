@@ -15,7 +15,7 @@ class MockStream extends stream.Transform {
     cb();
   }
 }
-const files = proxyquire('./', {
+const importer = proxyquire('./', {
   './mongoStream': {InsertStream: MockStream}
 });
 
@@ -33,7 +33,7 @@ const mockDb = {
 export function testInsertCollectionSuccess(done) {
   const file = fs.createReadStream(`${__dirname}/data.json`);
 
-  files.insertCollection(file, 'newCollection', mockDb)
+  importer.insertCollection(file, 'newCollection', mockDb)
     .then(() => {
       assert.ok(true);
       done();
@@ -47,7 +47,7 @@ export function testInsertCollectionSuccess(done) {
 export function testInsertError(done) {
   const file = fs.createReadStream(`${__dirname}/error-data.json`);
 
-  files.insertCollection(file, 'newCollection', mockDb)
+  importer.insertCollection(file, 'newCollection', mockDb)
     .then(() => {
       assert.ok(false);
       done();
@@ -63,7 +63,7 @@ export function testInsertError(done) {
 export function testInsertDuplicateCollection(done) {
   const file = fs.createReadStream(`${__dirname}/data.json`);
 
-  files.insertCollection(file, 'collection1', mockDb)
+  importer.insertCollection(file, 'collection1', mockDb)
     .then(() => {
       assert.ok(false);
       done();
@@ -77,10 +77,10 @@ export function testInsertDuplicateCollection(done) {
 }
 
 export function testcollectionName(done) {
-  let name = files.getCollectionName('data.json');
+  let name = importer.getCollectionName('data.json');
   assert.equal('data', name);
 
-  name = files.getCollectionName('new.sub.collection.data.json');
+  name = importer.getCollectionName('new.sub.collection.data.json');
   assert.equal('new.sub.collection.data', name);
 
   done();

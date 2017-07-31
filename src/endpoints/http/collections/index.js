@@ -1,7 +1,7 @@
 import listCollections from './list';
 import createCollection from './create';
 import deleteCollections from './delete';
-import {insertCollections, getCollectionNames} from './files';
+import {insertCollections, getCollectionNames} from './import';
 import exportCollections from './export';
 import statusCodes from 'http-status-codes';
 import UnsupportedMediaError from '../../../Errors/UnsupportedMediaError';
@@ -57,17 +57,17 @@ export function collectionsHandler(router) {
       .catch(next);
   });
 
-  // Upload collections from files
-  router.post('/collections/upload', (req, res, next) => {
+  // Import collections from files
+  router.post('/collections/import', (req, res, next) => {
     if (!req.files.length) {
       return next({message: 'No file', code: statusCodes.BAD_REQUEST});
     }
 
-    req.log.debug({collectionNames: getCollectionNames(req.files)}, 'Starting collections upload');
+    req.log.debug({collectionNames: getCollectionNames(req.files)}, 'Starting collections import');
 
     insertCollections(req.files, req.db)
       .then(importedCollections => {
-        req.log.trace({importedCollections}, 'Collections upload completed');
+        req.log.trace({importedCollections}, 'Collections import completed');
         res.status(statusCodes.CREATED).end();
       })
       .catch(err => {

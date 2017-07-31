@@ -17,7 +17,7 @@ function attachMiddlewares(router) {
   router.use(dbConnection(dbConfig));
 
   // Route level middleware
-  var importEndpoint = router.route('/collections/upload');
+  var importEndpoint = router.route('/collections/import');
   importEndpoint.post(parseFile());
 }
 

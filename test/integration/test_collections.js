@@ -92,10 +92,10 @@ module.exports = {
          });
     },
 
-    'test_collection_upload': function(done) {
+    'test_collection_import': function(done) {
       const test = (ext, cb) => {
         chai.request(SERVER_URL)
-          .post(`${PATH_PREFIX}/collections/upload`)
+          .post(`${PATH_PREFIX}/collections/import`)
           .attach('file', fs.readFileSync(`${__dirname}/fixture/import.${ext}`), `import.${ext}` )
           .set('Authorization', `Bearer ${TOKEN}`)
           .end((err, res) => {
@@ -107,10 +107,10 @@ module.exports = {
       async.eachSeries(['json', 'csv', 'bson'], test, done);
     },
 
-    'test_zip_upload': function(done) {
+    'test_zip_import': function(done) {
       const test = (zipName,cb) => {
         chai.request(SERVER_URL)
-          .post(`${PATH_PREFIX}/collections/upload`)
+          .post(`${PATH_PREFIX}/collections/import`)
           .attach('file', fs.readFileSync(`${__dirname}/fixture/${zipName}.zip`), `${zipName}.zip` )
           .set('Authorization', `Bearer ${TOKEN}`)
           .end((err, res) => {
@@ -138,9 +138,9 @@ module.exports = {
       async.eachSeries(['collections','import-MacOS'], test, done);
     },
 
-    'test_zip_upload_unsupported_media': function(done) {
+    'test_zip_import_unsupported_media': function(done) {
       chai.request(SERVER_URL)
-        .post(`${PATH_PREFIX}/collections/upload`)
+        .post(`${PATH_PREFIX}/collections/import`)
         .attach('file', fs.readFileSync(`${__dirname}/fixture/unsupportedFiles.zip`), `unsupportedFiles.zip` )
         .set('Authorization', `Bearer ${TOKEN}`)
         .end((err, res) => {

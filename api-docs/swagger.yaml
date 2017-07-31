@@ -92,21 +92,21 @@ paths:
           description: Application error
           schema:
             $ref: '#/definitions/ErrorResponse'
-  '/{domain}/{envId}/{appGuid}/data/collections/upload':
+  '/{domain}/{envId}/{appGuid}/data/collections/import':
     parameters:
       - $ref: "#/parameters/domain"
       - $ref: "#/parameters/envId"
       - $ref: "#/parameters/appGuid"
     post:
-      summary: Upload collection(s)
+      summary: Import collection(s)
       description: |
-        Upload json, bson, csv, or zip file collection(s)
+        Import json, bson, csv, or zip file collection(s)
       operationId: insertCollections
       parameters:
         - in: formData
           type: file
           name: file
-          description: The file to be uploaded
+          description: The file to be imported
           required: true
       consumes:
         - application/json
@@ -117,7 +117,7 @@ paths:
         - Collections
       responses:
         '201':
-          description: Successful collection uploaded
+          description: Successful collection import
         '400':
           description: No file submitted
           schema:
