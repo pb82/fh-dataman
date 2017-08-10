@@ -25,7 +25,7 @@ function getCollectionSizeOne(db, collectionName) {
  * Gets the size of all collections.
  *
  * @param {db} db - The db connection.
- * @param {String} collectionNames - The String array of collections requested to export.
+ * @param {String[]} collectionNames - Array of collection names.
  * @returns Promise
  */
 function getCollectionsSize(db, collectionNames) {
@@ -33,23 +33,23 @@ function getCollectionsSize(db, collectionNames) {
 }
 
 /**
- * Gets the total size of all collections.
+ * Sum an array of Numbers.
  *
- * @param {Number} sizes - Number array containing each collections size.
- * @returns {Number} - sum of all the collection sizes.
+ * @param {Number[]} sizes - Number array containing sizes.
+ * @returns {Number} - sum of all the sizes.
  */
 function getTotalSize(sizes) {
   return sizes.reduce((acc, size) => acc + size, 0);
 }
 
 /**
- * Gets documents for all collections.
+ * Gets the associated stream for all collections.
  *
  * @param {String} collections - String array of all collection names.
  * @param {db} db - db connection.
  * @param {String} format - The requested format to export the collections.
  * @param {Boolean} raw - true for a collection's documents to be returned in bson format, false for json.
- * @returns {Stream} - An array of streams containing each collection's documents.
+ * @returns {Stream[]} - An array of streams containing each collection's documents.
  */
 function getCollectionStreams(collections, db, format, raw) {
   return collections.map(name => {
@@ -61,11 +61,11 @@ function getCollectionStreams(collections, db, format, raw) {
 }
 
 /**
- * Parses all collections in the requested format.
+ * Assigns parser streams for each collection.
  *
  * @param {Stream} streams - An array of streams containing each collection's documents.
  * @param {String} format - The requested format to export the collections.
- * @returns {Stream} - An array of streams containing each collection's documents parsed in the requested format.
+ * @returns {Promise[]} - An array of promises that resolve to streams containing each collection's documents parsed in the requested format.
  */
 function setParsers(streams, format) {
   return streams.map(collection => parsers[format](collection));
@@ -87,6 +87,35 @@ function exportZip(zipFile, out) {
   });
 }
 
+function isValidExportSize(db, collectionNames) {
+  const sizeLimit = fhconfig.value('sizeLimit');
+  if (!sizeLimit) {
+    return Promise.resolve(true);
+  }
+
+  return getCollectionsSize(db, collectionNames)
+    .then(collectionsSize => collectionsSize <= sizeLimit);
+}
+
+/**
+ * Create a human readable size with units from bytes.
+ *
+ * @param {Number} bytes - The size in bytes.
+ * @returns {String} - Human readable size with units.
+ */
+function formatBytes(bytes) {
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
+
+  const k = 1000;
+  const dm = 2;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
 /**
  * Exports collection(s) for a given app.
  *
@@ -97,11 +126,13 @@ function exportZip(zipFile, out) {
  * @returns Promise.
  */
 function exportHandler(db, collectionNames, format, out) {
-  return getCollectionsSize(db, collectionNames)
-    .then(collectionsSize => {
-      if (collectionsSize >= fhconfig.value('sizeLimit')) {
-        throw new Error("Cannot export collections larger than a gigabyte");
+  return isValidExportSize(db, collectionNames)
+    .then(validSize => {
+      if (!validSize) {
+        const humanReadableSize = formatBytes(fhconfig.value('sizeLimit'));
+        return Promise.reject(new Error(`Cannot export collections larger than ${humanReadableSize}`));
       }
+
       const streams = getCollectionStreams(collectionNames, db, format, format === 'bson');
       const parsedCollections = setParsers(streams, format);
       return Promise.all(parsedCollections);
@@ -138,5 +169,6 @@ export default function exportCollections(db, reqCollections, format, out) {
     return getAllCollectionNames(db)
       .then(collectionNames => exportHandler(db, collectionNames, format, out));
   }
+
   return exportHandler(db, reqCollections, format, out);
 }
