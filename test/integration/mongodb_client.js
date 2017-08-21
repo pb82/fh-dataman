@@ -6,11 +6,15 @@ import {MongoClient} from  'mongodb';
 const MONGO_SERVER = process.env.MONGO_SERVER || 'localhost';
 const MONGO_ADMIN_USER = process.env.MONGO_ADMIN_USER || 'admin';
 const MONGO_ADMIN_PASS = process.env.MONGO_ADMIN_PASS || 'admin';
-const MONGO_ADMIN_DB_URL = `mongodb://${MONGO_ADMIN_USER}:${MONGO_ADMIN_PASS}@${MONGO_SERVER}/admin`;
 const MONGO_USER = "test";
 const MONGO_PASS = "password";
 const MONGO_DB_NAME = "fh-dataman-test";
-const MONGODBURL = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_SERVER}/${MONGO_DB_NAME}`;
+const MONGO_ADMIN_DB_URL = process.env.MONGODB_HOST ?
+      `mongodb://${process.env.MONGODB_HOST}/admin` :
+      `mongodb://${MONGO_ADMIN_USER}:${MONGO_ADMIN_PASS}@${MONGO_SERVER}/admin`;
+const MONGODBURL = process.env.MONGODB_HOST ?
+      `mongodb://${process.env.MONGODB_HOST}/${MONGO_DB_NAME}` :
+      `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_SERVER}/${MONGO_DB_NAME}`;
 
 exports.MONGODBURL = MONGODBURL;
 
