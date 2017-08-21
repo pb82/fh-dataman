@@ -4,4 +4,4 @@
 # to ensure log output (sent to stdout,stderr) from a daemonized script is accessible.
 #
 umask 002
-exec /usr/local/bin/fh-dataman $* > /var/log/feedhenry/fh-dataman/fh-dataman-console.log 2>&1
+exec $PS_BIN $* > $PS_CON 2>&1

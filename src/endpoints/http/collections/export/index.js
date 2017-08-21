@@ -119,8 +119,8 @@ function exportHandler(db, collectionNames, format, out) {
 function getAllCollectionNames(db) {
   return db
     .listCollections()
-    .map(collection => collection.name.split('.').pop())
     .toArray()
+    .then(collections => collections.map(collection => collection.name.split('.').pop()))
     .then(names => names.filter(name => name !== 'indexes' & name !== 'users'));
 }
 

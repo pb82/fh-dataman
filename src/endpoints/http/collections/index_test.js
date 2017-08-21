@@ -13,20 +13,17 @@ import bodyParser from 'body-parser';
 import errorHandler from '../error';
 import sinonStubPromise from 'sinon-stub-promise';
 import statusCodes from 'http-status-codes';
-import fhconfig from 'fh-config';
 
 sinonStubPromise(sinon);
 const app = express();
 const router = express.Router({mergeParams:true});
 const logger = getLogger();
-var user = null;
 const appGuid = '123456';
 
 collectionsHandler(router);
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   req.log = logger;
-  req.user = user;
   next();
 });
 app.use('/api/:appGuid/', router);
@@ -51,18 +48,7 @@ module.exports = {
         console.log('use mock exportImpl');
         return Promise.resolve(true);
       });
-      fhconfig.init('config/dev.json', () => {
-        user = {
-          entity: {
-            guid: appGuid
-          },
-          permissions: [{
-            businessObject: fhconfig.value('businessObject'),
-            permissions: {read: true, write: true}
-          }]
-        };
-        done();
-      });
+      done();
     },
     'after': done => {
       sinon.restore();

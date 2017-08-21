@@ -2,99 +2,72 @@ import assert from 'assert';
 import proxyquire from 'proxyquire';
 import sinon from 'sinon';
 import sinonStubPromise from 'sinon-stub-promise';
-import mockMbaasClient from './mocks/fhMbaasClientMock';
 import EventEmitter from 'events';
 
 sinonStubPromise(sinon);
-const mbaasClientStub = sinon.stub();
-const fhDbStub = sinon.stub().returnsPromise();
+const mongoConfStub = sinon.stub().returnsPromise();
+const mongoCompatApiStub = sinon.stub().returnsPromise();
 class MyEmitter extends EventEmitter {}
 const middleware = proxyquire('../', {
-  'fh-mbaas-client': {
-    MbaasClient: mockMbaasClient(mbaasClientStub)
+  './lib/mbaas': {
+    getMongoConf: mongoConfStub
   },
   'fh-db': {
-    createMongoCompatApi: fhDbStub
+    createMongoCompatApi: mongoCompatApiStub
   }
 });
 
-export function establishDedicatedDbConnection(done) {
-  const mockRes = new MyEmitter();
-  const mockReq = {
-    envId: 101,
-    db: '',
+function getMockReq() {
+  return {
     log: {
       debug: function() {},
       info: function() {}
     }
   };
-  mbaasClientStub.yields(null, {
-    FH_MONGODB_CONN_URL: 'dedicatedconnection'
-  });
-  fhDbStub.resolves('dedicatedconnection');
-  const underTest = middleware.default({mbaasConf: {}});
-  underTest(mockReq, mockRes, err => {
-    assert.equal(mockReq.db, 'dedicatedconnection');
-    assert.ok(!err);
+}
+
+export function getDbConnectionSuccess(done) {
+  const mockRes = new MyEmitter();
+  const mockReq = getMockReq();
+
+  mongoConfStub.resolves({});
+  mongoCompatApiStub.resolves({close: function() {}});
+  const underTest = middleware.default({});
+
+  underTest(mockReq, mockRes, () => {
+    assert.ok(mockReq.db);
     mockRes.emit('end');
     done();
   });
 }
 
-export function establishSharedDbConnection(done) {
+export function getDbConnectionFailOnConf(done) {
   const mockRes = new MyEmitter();
-  const mockReq = {
-    envId: 102,
-    db: '',
-    log: {
-      debug: function() {},
-      info: function() {}
-    }
-  };
-  mbaasClientStub.yields(null, {});
-  fhDbStub.resolves('sharedconnection');
-  const underTest = middleware.default({
-    mbaasConf: {},
-    FH_MONGODB_CONN_URL: 'sharedconnection'
-  });
-  underTest(mockReq, mockRes, err => {
-    assert.equal(mockReq.db, 'sharedconnection');
-    assert.ok(!err);
-    mockRes.emit('end');
-    done();
-  });
-}
+  const mockReq = getMockReq();
 
-export function missingMbaasClientParams(done) {
-  const mockReq = {
-    log: {
-      debug: function() {},
-      info: function() {}
-    }
-  };
-  const mockRes = new MyEmitter();
-  mbaasClientStub.yields( {}, null);
-  const underTest = middleware.default({mbaasConf: {}});
+  mongoConfStub.rejects({});
+  mongoCompatApiStub.resolves({close: function() {}});
+  const underTest = middleware.default({});
+
   underTest(mockReq, mockRes, err => {
     assert.ok(err);
+    assert.ok(!mockReq.db);
     mockRes.emit('end');
     done();
   });
 }
 
-export function errorEstablishingDbConnection(done) {
-  const mockReq = {
-    log: {
-      debug: function() {},
-      info: function() {}
-    }
-  };
+export function getDbConnectionFailOnCompatApi(done) {
   const mockRes = new MyEmitter();
-  mbaasClientStub.yields(null, {});
-  fhDbStub.rejects('error');
-  const underTest = middleware.default({mbaasConf: {}});
+  const mockReq = getMockReq();
+
+  mongoConfStub.resolves({});
+  mongoCompatApiStub.rejects({});
+  const underTest = middleware.default({});
+
   underTest(mockReq, mockRes, err => {
     assert.ok(err);
+    assert.ok(!mockReq.db);
     mockRes.emit('end');
     done();
   });

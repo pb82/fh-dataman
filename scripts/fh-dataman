@@ -18,7 +18,7 @@ export PATH=/usr/local/bin:$PATH
 OSNAME=`uname -s`
 
 # Service Essentials
-PS_DESC=fh-dataman
+PS_DESC=FeedHenry-Dataman
 PS_TAG=fh-dataman
 PS_PARENT=fh-dataman
 

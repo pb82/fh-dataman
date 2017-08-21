@@ -9,7 +9,7 @@ var app = express();
 //TODO: change the path here to be the right one
 app.get('/api/mbaas/apps/:domain/:environment/:appname/env', function(req, res) {
   console.log('returning mock mongdb url', mongodbClient.MONGODBURL);
-  return res.json({FH_MONGODB_CONN_URL: mongodbClient.MONGODBURL});
+  return res.json({env : {FH_MONGODB_CONN_URL: mongodbClient.MONGODBURL}});
 });
 
 var server;

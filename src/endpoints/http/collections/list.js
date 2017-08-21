@@ -7,6 +7,7 @@
  */
 export default function listCollections(appname, logger, db) {
   logger.debug({appname: appname}, "list collections for app");
+
   return db.listCollections().toArray().then(items => {
     const promises = items.map(item => db.collection(item.name).stats());
     return Promise.all(promises);

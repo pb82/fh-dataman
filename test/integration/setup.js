@@ -12,7 +12,7 @@ var testConf = require('./test_conf.json');
 
 export function before(done) {
   process.env.conf_file = path.resolve(__dirname, './test_conf.json');
-  var port = url.parse(testConf['fh-mbaas'].url).port;
+  var port = url.parse(testConf.mbaas.url).port;
   async.series([
     cb => {
       //ignore error when drop the db, it might not exists

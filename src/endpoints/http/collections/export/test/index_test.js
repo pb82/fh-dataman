@@ -29,7 +29,7 @@ const streamStub = sinon.stub();
 const originalParser = parsers.default.json;
 
 const mockDb = {
-  listCollections: () => ({ map: () => ({ toArray: listStub }) }),
+  listCollections: () => ({ toArray: listStub }),
   collection: collectionStub
 };
 
@@ -56,7 +56,7 @@ export function testExportReqCollections(done) {
 }
 
 export function testExportAllCollections(done) {
-  listStub.resolves(['indexes', 'users', 'collection1', 'collection2']);
+  listStub.resolves([{name: 'indexes'}, {name: 'users'}, {name: 'collection1'}, {name: 'collection2'}]);
   statsStub.yields(null, {size: 100 } );
   collectionStub.returns({
     find: () => ({ stream: streamStub }),
@@ -74,7 +74,7 @@ export function testExportAllCollections(done) {
 }
 
 export function testExportZipFail(done) {
-  listStub.resolves(['indexes', 'users', 'collection1', 'collection2']);
+  listStub.resolves([{name: 'indexes'}, {name: 'users'}, {name: 'collection1'}, {name: 'collection2'}]);
   statsStub.yields(null, { size: 100 });
   collectionStub.returns({
     find: () => ({ stream: streamStub }),
@@ -90,7 +90,7 @@ export function testExportZipFail(done) {
 }
 
 export function testCollectionDoesNotExist(done) {
-  listStub.resolves(['indexes', 'users', 'collection1', 'collection2']);
+  listStub.resolves([{name: 'indexes'}, {name: 'users'}, {name: 'collection1'}, {name: 'collection2'}]);
   statsStub.yields({ message: 'ns not found'});
   collectionStub.returns({ stats: statsStub });
   exportCollections(mockDb, allCollections, supportedFormat).catch(err => {
@@ -100,7 +100,7 @@ export function testCollectionDoesNotExist(done) {
 }
 
 export function testCollectionSizeTooBig(done) {
-  listStub.resolves(['indexes', 'users', 'collection1', 'collection2']);
+  listStub.resolves([{name: 'indexes'}, {name: 'users'}, {name: 'collection1'}, {name: 'collection2'}]);
   statsStub.yields(null, { size: fhconfig.value('sizeLimit') });
   collectionStub.returns({ stats: statsStub });
   fhconfig.init('config/dev.json', () => {

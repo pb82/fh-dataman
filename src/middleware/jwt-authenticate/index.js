@@ -17,13 +17,14 @@ export default (options={}) => {
   }
 
   function middleware(req, res, next) {
-    if (!req.headers || !req.headers.authorization) {
-      return next(new UnauthorizedError('Authorisation header has not been set'));
+    const authorization = Object.assign(req.body || {}, req.query || {}, req.headers || {}).authorization;
+    if (!authorization) {
+      return next(new UnauthorizedError('Authorisation has not been set'));
     }
 
-    const [schema='', token=''] = req.headers.authorization.split(' ');
+    const [schema='', token=''] = authorization.split(' ');
     if (schema !== 'Bearer' || !token) {
-      return next(new UnauthorizedError('Authorisation header should use "Bearer <token>" schema'));
+      return next(new UnauthorizedError('Authorisation should use "Bearer <token>" schema'));
     }
 
     jwt.verify(token, options.secret, (err, payload) => {

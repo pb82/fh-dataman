@@ -10,8 +10,8 @@ function getRouteData(req) {
 }
 
 function hasValidBusinessObject(permissionsList, permission) {
-  const routeBusinessObject = fhconfig.value('businessObject');
-  return permissionsList.some(p => p.businessObject === routeBusinessObject && p.permissions[permission]);
+  const routeBusinessObjects = fhconfig.value('businessObjects');
+  return permissionsList.some(p => routeBusinessObjects.indexOf(p.businessObject) > -1 && p.permissions[permission]);
 }
 
 function appHasPermission(appGuid, entityGuid) {

@@ -36,7 +36,7 @@ export function authenticationHeaderMustBeSet(done) {
     .get(testEndPoint)
     .expect(401)
     .expect(res => {
-      assert.equal(res.body.message, 'Authorisation header has not been set');
+      assert.equal(res.body.message, 'Authorisation has not been set');
     })
     .end(done);
 }
@@ -47,7 +47,7 @@ export function authenticationHeaderMustUseCorrectSchema(done) {
     .set('Authorization', 'Not-Bearer token')
     .expect(401)
     .expect(res => {
-      assert.equal(res.body.message, 'Authorisation header should use "Bearer <token>" schema');
+      assert.equal(res.body.message, 'Authorisation should use "Bearer <token>" schema');
     })
     .end(done);
 }
@@ -58,7 +58,7 @@ export function authenticationHeaderMustHaveToken(done) {
     .set('Authorization', 'Bearer')
     .expect(401)
     .expect(res => {
-      assert.equal(res.body.message, 'Authorisation header should use "Bearer <token>" schema');
+      assert.equal(res.body.message, 'Authorisation should use "Bearer <token>" schema');
     })
     .end(done);
 }
