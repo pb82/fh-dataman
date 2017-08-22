@@ -26,7 +26,7 @@
     "cluster/reseller/customer/domain/project/cloud-apps/data-browser"
   ],
   "port": 8822,
-  "sizeLimit": 524288000,
+  "sizeLimit": 1000000000,
   "rootUrl": "/",
   "mbaas": {
     "url": "https://api.feedhenry.me",
