@@ -10,10 +10,7 @@ const PATH_PREFIX = "/api/:domain/:envId/:appGuid/data";
 function attachMiddlewares(router) {
   // Router level middleware
   router.use(authorize());
-  const dbConfig = {
-    mbaas: fhconfig.value('mbaas'),
-    ditch: fhconfig.value('ditch')
-  };
+  const dbConfig = fhconfig.getConfig().rawConfig;
   router.use(dbConnection(dbConfig));
 
   // Route level middleware
