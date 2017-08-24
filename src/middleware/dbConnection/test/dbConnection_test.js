@@ -7,11 +7,13 @@ import EventEmitter from 'events';
 sinonStubPromise(sinon);
 const mongoConfStub = sinon.stub().returnsPromise();
 const mongoCompatApiStub = sinon.stub().returnsPromise();
-class MyEmitter extends EventEmitter {}
-const middleware = proxyquire('../', {
-  './lib/mbaas': {
-    getMongoConf: mongoConfStub
-  },
+class MockMBaaS {
+  getMongoConf() {
+    return mongoConfStub();
+  }
+}
+const dbConnection = proxyquire('../', {
+  './lib/mbaas': {MBaaS: MockMBaaS},
   'fh-db': {
     createMongoCompatApi: mongoCompatApiStub
   }
@@ -27,14 +29,14 @@ function getMockReq() {
 }
 
 export function getDbConnectionSuccess(done) {
-  const mockRes = new MyEmitter();
+  const mockRes = new EventEmitter();
   const mockReq = getMockReq();
 
   mongoConfStub.resolves({});
   mongoCompatApiStub.resolves({close: function() {}});
-  const underTest = middleware.default({});
+  const dbConnectionMiddleware = dbConnection.default({mbaasType: 'mbaasType'});
 
-  underTest(mockReq, mockRes, () => {
+  dbConnectionMiddleware(mockReq, mockRes, () => {
     assert.ok(mockReq.db);
     mockRes.emit('end');
     done();
@@ -42,14 +44,14 @@ export function getDbConnectionSuccess(done) {
 }
 
 export function getDbConnectionFailOnConf(done) {
-  const mockRes = new MyEmitter();
+  const mockRes = new EventEmitter();
   const mockReq = getMockReq();
 
   mongoConfStub.rejects({});
   mongoCompatApiStub.resolves({close: function() {}});
-  const underTest = middleware.default({});
+  const dbConnectionMiddleware = dbConnection.default({mbaasType: 'mbaasType'});
 
-  underTest(mockReq, mockRes, err => {
+  dbConnectionMiddleware(mockReq, mockRes, err => {
     assert.ok(err);
     assert.ok(!mockReq.db);
     mockRes.emit('end');
@@ -58,14 +60,14 @@ export function getDbConnectionFailOnConf(done) {
 }
 
 export function getDbConnectionFailOnCompatApi(done) {
-  const mockRes = new MyEmitter();
+  const mockRes = new EventEmitter();
   const mockReq = getMockReq();
 
   mongoConfStub.resolves({});
   mongoCompatApiStub.rejects({});
-  const underTest = middleware.default({});
+  const dbConnectionMiddleware = dbConnection.default({mbaasType: 'mbaasType'});
 
-  underTest(mockReq, mockRes, err => {
+  dbConnectionMiddleware(mockReq, mockRes, err => {
     assert.ok(err);
     assert.ok(!mockReq.db);
     mockRes.emit('end');
