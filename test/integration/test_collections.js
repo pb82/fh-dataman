@@ -57,7 +57,7 @@ module.exports = {
             expect(err).to.be.null;
             expect(res).to.have.status(statusCodes.OK);
             expect(res).to.be.json;
-            expect(res.body).to.have.lengthOf(4); //there will be system.users and system.indexes as well
+            expect(res.body).to.have.lengthOf(2);
             const col1 = res.body.filter(col => col.name === COLLECTIONS[0].name);
             const col2 = res.body.filter(col => col.name === COLLECTIONS[1].name);
             expect(col1[0].count).to.equal(COLLECTIONS[0].docs.length);
@@ -87,7 +87,8 @@ module.exports = {
          .end((err, res) => {
            expect(err).to.be.null;
            expect(res).to.have.status(statusCodes.OK);
-           expect(res.text).to.equal('test1,test2 collection(s) deleted');
+           expect(res.text).to.contain('test1');
+           expect(res.text).to.contain('test2');
            mongodbClient.createCollectionsWithDocs(COLLECTIONS, done);
          });
     },

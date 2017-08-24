@@ -1,3 +1,12 @@
+const SYSTEM_COLLECTIONS = [
+  'system.indexes',
+  'system.users',
+  'system.version',
+  'system.namespaces',
+  'system.profile',
+  'system.js'
+];
+
 /**
  * Get the collection list and their info (including the namespace, name, count and size). Returns a promise.
  * @param {string} appname The appname. It should be in the format of "<domain>-<appGuid>-<envId>".
@@ -8,13 +17,17 @@
 export default function listCollections(appname, logger, db) {
   logger.debug({appname: appname}, "list collections for app");
 
-  return db.listCollections().toArray().then(items => {
-    const promises = items.map(item => db.collection(item.name).stats());
-    return Promise.all(promises);
-  }).then(stats => stats.map(stat => ({
-    'ns': stat.ns,
-    'name': stat.ns.split('.')[1],
-    'count': stat.count,
-    'size': stat.size
-  })));
+  return db
+    .listCollections()
+    .toArray()
+    .then(items => items.filter(item => SYSTEM_COLLECTIONS.indexOf(item.name) === -1))
+    .then(items => {
+      const promises = items.map(item => db.collection(item.name).stats());
+      return Promise.all(promises);
+    }).then(stats => stats.map(stat => ({
+      'ns': stat.ns,
+      'name': stat.ns.split('.')[1],
+      'count': stat.count,
+      'size': stat.size
+    })));
 }
