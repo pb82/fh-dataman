@@ -4,7 +4,7 @@ import fhdb from 'fh-db';
 /**
  * @param {object} options
  * @param {object} options.mbaas - options for the current mbaas
- * @param {object} options.ditch - ditch options for shared db connections
+ * @param {object} [options.ditch] - ditch options for shared db connections
  */
 export default options => {
 
@@ -20,7 +20,8 @@ export default options => {
 
     res.once('end', () => req.db && req.db.close());
 
-    mbaas.getMongoConf(options, req)
+    new mbaas.MBaaS(options)
+      .getMongoConf(req)
       .then(conf => fhdb.createMongoCompatApi(conf))
       .then(db => req.db = db)
       .then(db => req.log.info({db: db}, 'mongodb connection set'))

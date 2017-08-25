@@ -5,7 +5,7 @@
  * @param {object} appEnvVarsStub
  * @param {object} primaryNodeStub
  */
-module.exports = (appEnvVarsStub, primaryNodeStub) => function MbaasClient() {
+module.exports = (appEnvVarsStub, primaryNodeStub, dbConnectionStub) => function MbaasClient() {
   return {
     admin: {
       apps: {
@@ -14,6 +14,9 @@ module.exports = (appEnvVarsStub, primaryNodeStub) => function MbaasClient() {
         },
         mongoPrimary: primaryNodeStub
       }
+    },
+    app: {
+      databaseConnectionString: dbConnectionStub
     }
   };
 };

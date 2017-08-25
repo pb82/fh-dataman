@@ -7,11 +7,23 @@ import mockMbaasClient from './mocks/fhMbaasClientMock';
 sinonStubPromise(sinon);
 const appEnvVarsStub = sinon.stub();
 const primaryNodeStub = sinon.stub().returnsPromise();
-const mbaas = proxyquire('../lib/mbaas', {
+const dbConnectionStub = sinon.stub().returnsPromise();
+const feedhenryMbaasType = proxyquire('../lib/mbaas/types/feedhenry', {
   'fh-mbaas-client': {
     MbaasClient: mockMbaasClient(appEnvVarsStub, primaryNodeStub)
   }
 });
+const openshiftMbaasType = proxyquire('../lib/mbaas/types/openshift', {
+  'fh-mbaas-client': {
+    MbaasClient: mockMbaasClient(appEnvVarsStub, null, dbConnectionStub)
+  }
+});
+const MockMbaaS = proxyquire('../lib/mbaas', {
+  './types': {
+    feedhenry: feedhenryMbaasType,
+    openshift: openshiftMbaasType
+  }
+}).MBaaS;
 
 function getMockReq() {
   return {
@@ -26,14 +38,17 @@ function getMockReq() {
   };
 }
 
-function getOptions() {
+function getOptions(mbaasType) {
   return {
+    mbaasType: mbaasType,
+    auth: {
+      secret: '123456'
+    },
     mbaas: {
       url: 'https://api.host.com',
       password: 'pass',
       username: 'user'
     },
-
     ditch: {
       user: 'user',
       password: 'pass',
@@ -51,7 +66,9 @@ export function getDedicatedDbConnectionConf(done) {
       FH_MONGODB_CONN_URL: expectedUrl
     }
   });
-  mbaas.getMongoConf(getOptions(), getMockReq())
+
+  new MockMbaaS(getOptions('feedhenry'))
+    .getMongoConf(getMockReq())
     .then(conf => {
       assert.ok(conf.__dbperapp);
       assert.equal(conf.connectionUrl, expectedUrl);
@@ -67,7 +84,8 @@ export function getSharedDbConnectionConf(done) {
     host: 'primaryNodeHost',
     port: 'primaryNodePort'
   });
-  mbaas.getMongoConf(getOptions(), getMockReq())
+  new MockMbaaS(getOptions('feedhenry'))
+    .getMongoConf(getMockReq())
     .then(conf => {
       assert.ok(!conf.__dbperapp);
       assert.equal(conf.connectionUrl, expectedUrl);
@@ -78,7 +96,8 @@ export function getSharedDbConnectionConf(done) {
 
 export function appEnvVarFail(done) {
   appEnvVarsStub.yields({});
-  mbaas.getMongoConf(getOptions(), getMockReq())
+  new MockMbaaS(getOptions('feedhenry'))
+  .getMongoConf(getMockReq())
     .then(conf => {
       assert.ok(!conf);
       done();
@@ -92,7 +111,8 @@ export function appEnvVarFail(done) {
 export function mongoprimaryNodeFail(done) {
   appEnvVarsStub.yields(null, {});
   primaryNodeStub.yields({});
-  mbaas.getMongoConf(getOptions(), getMockReq())
+  new MockMbaaS(getOptions('feedhenry'))
+  .getMongoConf(getMockReq())
     .then(conf => {
       assert.ok(!conf);
       done();
@@ -101,4 +121,23 @@ export function mongoprimaryNodeFail(done) {
       assert.ok(err);
       done();
     });
+}
+
+export function mongoOpenshift(done) {
+  var expectedUrl = 'mongodb://user:pass@openshiftmongohost:27017/dbname';
+  appEnvVarsStub.yields(null, {
+    env: {
+      FH_MBAAS_ENV_ACCESS_KEY: '12345',
+      FH_APP_API_KEY: '12345'
+    }
+  });
+  dbConnectionStub.yields(null, {url: expectedUrl});
+  new MockMbaaS(getOptions('openshift'))
+  .getMongoConf(getMockReq())
+    .then(conf => {
+      assert.ok(conf.__dbperapp);
+      assert.equal(conf.connectionUrl, expectedUrl);
+      done();
+    })
+    .catch(done);
 }

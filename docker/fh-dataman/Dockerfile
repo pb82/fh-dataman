@@ -1,6 +1,6 @@
-FROM registry.access.redhat.com/rhscl/nodejs-4-rhel7
+FROM centos/nodejs-4-centos7
 
-EXPOSE 8080
+EXPOSE 8822
 
 USER root
 
@@ -17,4 +17,4 @@ RUN tar -xf fh-*.tar.gz --strip 1 && \
             mv conf-docker.json config/conf.json && \
             chmod -R ug+rw ./
 
-CMD ["bash", "-c", "node ./fh-dataman.js ./config/conf.json --master-only"]
+CMD ["bash", "-c", "node ./lib/app.js ./config/conf.json --master-only"]
