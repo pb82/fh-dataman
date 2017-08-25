@@ -32,6 +32,21 @@ export function setupDb(cb) {
 }
 
 /**
+ * Remove the test user
+ */
+export function removeUser(cb) {
+  MongoClient.connect(MONGO_ADMIN_DB_URL, (err, db) => {
+    if (err) {
+      return cb(err);
+    }
+
+    var testDb = db.db(MONGO_DB_NAME);
+    testDb.removeUser(MONGO_USER, MONGO_PASS).then(() => cb(null, testDb)).catch(err => cb(err));
+  });
+}
+
+
+/**
  * Connect to the test mongodb
  */
 export function connectDb(cb) {

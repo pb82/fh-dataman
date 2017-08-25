@@ -15,8 +15,12 @@ export function before(done) {
   var port = url.parse(testConf.mbaas.url).port;
   async.series([
     cb => {
-      //ignore error when drop the db, it might not exists
+      //ignore error when drop the db, it might not exist
       mongodbClient.dropDb(() => cb());
+    },
+    cb => {
+      //ignore error when drop the user, it might not exist
+      mongodbClient.removeUser(() => cb());
     },
     //create the test mongodb
     cb => mongodbClient.setupDb(cb),
@@ -33,6 +37,7 @@ export function after(done) {
   async.series([
     cb => server.stopServer(cb),
     cb => mockMbaas.stop(cb),
-    cb => mongodbClient.dropDb(cb)
+    cb => mongodbClient.dropDb(cb),
+    cb => mongodbClient.removeUser(cb)
   ], done);
 }
