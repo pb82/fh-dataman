@@ -7,7 +7,7 @@ class json extends stream.Transform {
   }
 
   _transform(data, encoding, cb) {
-    data = JSON.stringify(data);
+    data = `${JSON.stringify(data)}\r\n`;
     this.push(data);
     cb();
   }
