@@ -1,4 +1,4 @@
-import InsertReceivedBufferError from './InsertReceivedBufferError';
+import BufferError from './BufferError';
 
 /**
  * Utility to insert data into the mongodb collection
@@ -10,7 +10,7 @@ import InsertReceivedBufferError from './InsertReceivedBufferError';
  */
 function insert(data, fn, cb) {
   if (data instanceof Buffer) {
-    return this.emit('error', new InsertReceivedBufferError());
+    return this.emit('error', new BufferError());
   }
 
   if (this.collection) {

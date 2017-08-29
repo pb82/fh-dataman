@@ -59,6 +59,7 @@
     "mongoose": "4.5.1",
     "optimist": "0.6.1",
     "request": "2.79.0",
+    "stream-meter": "~1.0.4",
     "yauzl": "^2.7.0",
     "yazl": "^2.4.2"
   },

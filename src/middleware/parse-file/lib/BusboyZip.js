@@ -51,7 +51,9 @@ export default class extends EventEmitter {
         return file.resume();
       }
 
-      self.filesFromZips.push(new Zip(file).getEntries());
+      const zip = new Zip(file, options.zipMemoryLimit);
+      zip.on('memorylimit', self.emit.bind(self, 'memorylimit'));
+      self.filesFromZips.push(zip.getEntries());
     });
   }
 

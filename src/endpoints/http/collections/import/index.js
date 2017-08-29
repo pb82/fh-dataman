@@ -72,6 +72,7 @@ export function insertCollection(file, name, db) {
 /**
  * Insert all the files contents into the database as getCollectionName.
  * file contents are expected to be compatible with mongodb insert interface.
+ * Executes sequentially.
  *
  * @param {Filestream[]} files - Array of ReadStreams to read the file data from.
  * @param {object} db - The mongodb connection.
@@ -79,5 +80,10 @@ export function insertCollection(file, name, db) {
  * @returns {Promise}
  */
 export function insertCollections(files, db) {
-  return Promise.all(files.map(file => insertCollection(file, getCollectionName(file.meta.fileName), db)));
+  return files.reduce((chain, file) => {
+    const collectionName = getCollectionName(file.meta.fileName);
+    return chain
+      .then(result => insertCollection(file, collectionName, db)
+      .then(name => result.concat([name])));
+  }, Promise.resolve([]));
 }

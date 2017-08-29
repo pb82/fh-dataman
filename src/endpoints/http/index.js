@@ -15,7 +15,7 @@ function attachMiddlewares(router) {
 
   // Route level middleware
   var importEndpoint = router.route('/collections/import');
-  importEndpoint.post(parseFile());
+  importEndpoint.post(parseFile({memoryLimit: fhconfig.value('memoryLimit')}));
 }
 
 export default function buildAPI(server) {

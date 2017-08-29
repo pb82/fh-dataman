@@ -4,6 +4,7 @@
   "https": {
     "enabled": false
   },
+  "memoryLimit": 30,
   "logger": {
     "name": "dataman",
     "streams": [{
