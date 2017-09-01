@@ -1,6 +1,8 @@
 import concat from 'concat-stream';
 import yauzl from 'yauzl';
 import mime from 'mime';
+import EventEmitter from 'events';
+import meter from 'stream-meter';
 import customMimeTypes from './customMimeTypes';
 
 mime.define(customMimeTypes);
@@ -38,22 +40,32 @@ function addEntryFileStream(entry) {
 /**
  * Zip takes a Zip filestream and resolves the entries in the Zip as individual Readstreams.
  */
-class Zip {
-  constructor(file={}) {
+class Zip extends EventEmitter {
+
+  constructor(file={}, memoryLimit) {
+    super();
+
     const self = this;
 
     self.file = file;
     self.entryFileStreams = [];
 
     self.entries = new Promise((resolve, reject) => {
-    /**
-     * Zip files are designed with the Central Directory (the authority on the contents of the .zip file)
-     * at the end of the file, not the beginning.
-     * For this reason a Zip file cannot be streamed and the whole Zip file needs to be buffered before manipulating the entries.
-     *
-     * See https://github.com/thejoshwolfe/yauzl#no-streaming-unzip-api
-     */
-      self.file.pipe(concat(buffer => {
+
+      var m = meter(memoryLimit);
+      m.on('error', err => {
+        self.file.resume();
+        self.emit('memorylimit', err);
+      });
+
+      /**
+       * Zip files are designed with the Central Directory (the authority on the contents of the .zip file)
+       * at the end of the file, not the beginning.
+       * For this reason a Zip file cannot be streamed and the whole Zip file needs to be buffered before manipulating the entries.
+       *
+       * See https://github.com/thejoshwolfe/yauzl#no-streaming-unzip-api
+       */
+      self.file.pipe(m).pipe(concat(buffer => {
         yauzl.fromBuffer(buffer, (err, zip) => {
           if (err) {
             return reject(err);
