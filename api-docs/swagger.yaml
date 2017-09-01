@@ -154,7 +154,12 @@ paths:
           type: string
           name: format
           description: The format the collections are to be exported in
-          required: true 
+          required: true
+        - in: query
+          type: string
+          name: filter
+          description: A filter to apply to the collection before exporting.
+          required: false
       tags:
         - Collections
       responses:
