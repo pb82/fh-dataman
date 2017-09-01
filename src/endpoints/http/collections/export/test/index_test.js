@@ -34,7 +34,11 @@ const mockDb = {
 };
 
 const exportCollections = index.default;
-const supportedFormat = 'json';
+const options = {
+  format: 'json',
+  mongoQuery: {}
+};
+
 const allCollections = [];
 const reqCollections = ['collection1'];
 
@@ -48,7 +52,7 @@ export function testExportReqCollections(done) {
   archive.default = () => fs.createReadStream(`${__dirname}/export.json`);
 
   fhconfig.init('config/dev.json', () => {
-    exportCollections(mockDb, reqCollections, supportedFormat, new MockWriteStream()).then(() => {
+    exportCollections(mockDb, reqCollections, options, new MockWriteStream()).then(() => {
       parsers.default.json = originalParser;
       done();
     });
@@ -66,7 +70,7 @@ export function testExportAllCollections(done) {
   archive.default = () => fs.createReadStream(`${__dirname}/export.json`);
 
   fhconfig.init('config/dev.json', () => {
-    exportCollections(mockDb, allCollections, supportedFormat, new MockWriteStream()).then(() => {
+    exportCollections(mockDb, allCollections, options, new MockWriteStream()).then(() => {
       parsers.default.json = originalParser;
       done();
     });
@@ -83,7 +87,7 @@ export function testExportZipFail(done) {
   parsers.default.json = sinon.stub().returns({ "_id": 1, "item": "bottle", "qty": 30 });
   archive.default = () => fs.createReadStream(`${__dirname}/error-data.json`);
 
-  exportCollections(mockDb, allCollections, supportedFormat, new MockWriteStream()).catch(() =>{
+  exportCollections(mockDb, allCollections, options, new MockWriteStream()).catch(() =>{
     parsers.default.json = originalParser;
     done();
   });
@@ -93,7 +97,7 @@ export function testCollectionDoesNotExist(done) {
   listStub.resolves([{name: 'indexes'}, {name: 'users'}, {name: 'collection1'}, {name: 'collection2'}]);
   statsStub.yields({ message: 'ns not found'});
   collectionStub.returns({ stats: statsStub });
-  exportCollections(mockDb, allCollections, supportedFormat).catch(err => {
+  exportCollections(mockDb, allCollections, options).catch(err => {
     assert.equal(err.message, 'collection1 collection does not exist');
     done();
   });
@@ -104,7 +108,7 @@ export function testCollectionSizeTooBig(done) {
   statsStub.yields(null, { size: fhconfig.value('sizeLimit') });
   collectionStub.returns({ stats: statsStub });
   fhconfig.init('config/dev.json', () => {
-    exportCollections(mockDb, allCollections, supportedFormat).catch(err => {
+    exportCollections(mockDb, allCollections, options).catch(err => {
       assert.equal(err.message, 'Cannot export collections larger than 1 GB');
       done();
     });
