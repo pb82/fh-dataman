@@ -5,6 +5,8 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import statusCodes from 'http-status-codes';
 import fhconfig from 'fh-config';
+import unzip from 'unzip-stream';
+import JSONstream from 'JSONStream';
 chai.use(chaiHttp);
 const expect = chai.expect;
 import * as mongodbClient from './mongodb_client';
@@ -15,10 +17,29 @@ const PATH_PREFIX = '/api/testing/dev/testappguid/data';
 
 var TOKEN = null;
 
+const filteredDocument = {field3:'field3', _id: '59a82b6e8988db530688e405'};
 const COLLECTIONS = [
-  {name: 'test1', docs: [{field1: 'field1', field2:'field2'}]},
+  {name: 'test1', docs: [{field1: 'field1', field2:'field2'}, filteredDocument]},
   {name: 'test2', docs: [{field1: 'field1', field2:'field2'}]}
 ];
+
+function parseFile(res, cb) {
+  res.pipe(unzip.Parse()).on('entry', entry => {
+    const jsonStream = entry.pipe(JSONstream.parse());
+    cb(null, jsonStream);
+  });
+}
+
+function getDocs(stream, cb) {
+  const docs = [];
+  stream.on('data', doc => {
+    docs.push(doc);
+  });
+  stream.on('end', () => {
+    cb(docs);
+  });
+  stream.on('error', cb);
+}
 
 module.exports = {
   'test_collections': {
@@ -139,7 +160,7 @@ module.exports = {
       async.eachSeries(['collections','import-MacOS'], test, done);
     },
 
-    'test_zip_import_unsupported_media': function(done) {
+    'test_zip_import_unsupported_media': done => {
       chai.request(SERVER_URL)
         .post(`${PATH_PREFIX}/collections/import`)
         .attach('file', fs.readFileSync(`${__dirname}/fixture/unsupportedFiles.zip`), `unsupportedFiles.zip` )
@@ -164,6 +185,24 @@ module.exports = {
           });
       };
       async.eachSeries(['json', 'csv', 'bson'], test, done);
+    },
+
+    'test_collection_export_with_filter': done => {
+      chai.request(SERVER_URL)
+        .get(`${PATH_PREFIX}/collections/export`)
+        .query({ collections: 'test1', format: 'json', filter: '{"eq":{"field3":{"type":"String","value":"field3"}}}'})
+        .set('Authorization', `Bearer ${TOKEN}`)
+        .buffer()
+        .parse(parseFile)
+        .end((err, res) => {
+          expect(err).to.be.null;
+          expect(res).to.have.status(statusCodes.OK);
+          getDocs(res.body, docs => {
+            expect(docs).to.have.lengthOf(1);
+            expect(docs[0]).to.deep.equal(filteredDocument);
+            done();
+          });
+        });
     },
 
     'test_collection_export_unsupported_media': done => {
