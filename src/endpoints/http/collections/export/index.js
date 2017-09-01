@@ -49,12 +49,13 @@ function getTotalSize(sizes) {
  * @param {db} db - db connection.
  * @param {String} format - The requested format to export the collections.
  * @param {Boolean} raw - true for a collection's documents to be returned in bson format, false for json.
+ * @param {object} query - A query to run on the collection before export.
  * @returns {Stream[]} - An array of streams containing each collection's documents.
  */
-function getCollectionStreams(collections, db, format, raw) {
+function getCollectionStreams(collections, db, format, raw, query) {
   return collections.map(name => {
     const collection = db.collection(name);
-    const cursor = collection.find({}, { raw: raw });
+    const cursor = collection.find(query, { raw: raw });
     cursor.filename = `${name}.${format}`;
     return cursor.stream();
   });
@@ -121,11 +122,14 @@ function formatBytes(bytes) {
  *
  * @param {db} db - The db connection.
  * @param {String} reqCollections - The String array of collections requested to export.
- * @param {String} format - The requested format to export the collections. Supports bson, json and csv.
+ * @param {object} options - Export options
+ * @param {String} options.format - The requested format to export the collections to. Supports bson, json and csv.
+ * @param {object} [options.mongoQuery] - A query to run on the collection before export.
  * @param {Stream} out - Response stream containing the zip file.
  * @returns Promise.
  */
-function exportHandler(db, collectionNames, format, out) {
+function exportHandler(db, collectionNames, options, out) {
+  const {format, mongoQuery={}} = options;
   return isValidExportSize(db, collectionNames)
     .then(validSize => {
       if (!validSize) {
@@ -133,7 +137,7 @@ function exportHandler(db, collectionNames, format, out) {
         return Promise.reject(new Error(`Cannot export collections larger than ${humanReadableSize}`));
       }
 
-      const streams = getCollectionStreams(collectionNames, db, format, format === 'bson');
+      const streams = getCollectionStreams(collectionNames, db, format, format === 'bson', mongoQuery);
       const parsedCollections = setParsers(streams, format);
       return Promise.all(parsedCollections);
     })
@@ -160,15 +164,17 @@ function getAllCollectionNames(db) {
  *
  * @param {db} db - The db connection.
  * @param {String} reqCollections - The String array of collections requested to export.
- * @param {String} format - The requested format to export the collections. Supports bson, json and csv.
+ * @param {object} options - Export options
+ * @param {String} options.format - The requested format to export the collections. Supports bson, json and csv.
+ * @param {object} [options.mongoQuery] - A query to run on the collection before export.
  * @param {Stream} out - The output stream of the zip entries.
- * @returns exportHandler - function to handle the exporting of collections.
+ * @returns Promise
  */
-export default function exportCollections(db, reqCollections, format, out) {
+export default function exportCollections(db, reqCollections, options, out) {
   if (!reqCollections.length) {
     return getAllCollectionNames(db)
-      .then(collectionNames => exportHandler(db, collectionNames, format, out));
+      .then(collectionNames => exportHandler(db, collectionNames, options, out));
   }
 
-  return exportHandler(db, reqCollections, format, out);
+  return exportHandler(db, reqCollections, options, out);
 }
