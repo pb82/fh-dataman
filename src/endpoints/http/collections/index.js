@@ -89,19 +89,19 @@ export function collectionsHandler(router) {
   });
 
   router.get('/collections/export', (req, res, next) => {
-    const supportedFormats = ["csv", "json", "bson"];
+    const supportedFormats = ['csv', 'json', 'bson'];
     if (!req.query.format.length) {
       return next({ message: 'No format selected', code: statusCodes.BAD_REQUEST });
     } else if (supportedFormats.indexOf(req.query.format) < 0) {
       return next(new UnsupportedMediaError(`${req.query.format} is not supported`));
     }
+
     res.setHeader('Content-disposition', 'attachment; filename=collections.zip');
     res.setHeader('Content-type', 'application/zip');
-
     const collections = req.query.collections ? req.query.collections.split(',') : [];
     req.log.debug(collections.length ? collections : ['ALL COLLECTIONS'], 'collection(s) export started');
 
-    exportCollections(req.db, collections, req.query.format, res)
+    exportCollections(req.db, collections, req.query, res)
       .then(() => {
         req.log.trace(collections.length ? collections : ['ALL COLLECTIONS'], ' Collection(s) export complete');
         res.status(statusCodes.OK).end();
