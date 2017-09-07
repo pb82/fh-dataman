@@ -9,7 +9,7 @@ This service will act as the new backend service for the databrowser in RHMAP st
 ## Table of Contents
 
 - [Build](#Build)
-- [Development] (#Development)
+- [Development](#Development)
 - [Usage](#usage)
 - [API](#api)
 - [Contribute](#contribute)
@@ -42,7 +42,7 @@ grunt unit
 grunt integration
 ```
 
-In order to run the integration tests, you will need to have Mongodb (v2.x) running somewhere. There must be an admin user created in the `admin` Mongodb database, and it should have the full admin permission. You can then override the Mongodb settings via the following environment variables:
+In order to run the integration tests, you will need to have Mongodb running somewhere. There must be an admin user created in the `admin` Mongodb database, and it should have the full admin permission. You can then override the Mongodb settings via the following environment variables:
 
 ```bash
 export MONGO_SERVER=192.168.33.10 #default to 'localhost'

@@ -28,4 +28,8 @@ fhBuildNode {
             name = 'fh-dataman'
         }
     }
+
+    stage('Build Image') {
+        dockerBuildNodeComponent("fh-dataman")
+    }
 }
