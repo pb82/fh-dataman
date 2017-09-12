@@ -1,6 +1,6 @@
 {
   "name": "fh-dataman",
-  "version": "0.1.1-BUILD-NUMBER",
+  "version": "0.2.0-BUILD-NUMBER",
   "description": "A new backend for the databrowser",
   "main": "lib/app.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "repository": "feedhenry/fh-dataman",
   "license": "MIT",
   "engines": {
-    "node": "4.4"
+    "node": "6.9"
   },
   "nyc": {
     "include": [
@@ -75,7 +75,7 @@
     "grunt": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-chmod": "^1.1.1",
-    "grunt-fh-build": "^1.0.2",
+    "grunt-fh-build": "~2.0.0",
     "load-grunt-tasks": "^3.5.2",
     "mocha": "^2.3.3",
     "nyc": "^10.0.0",
